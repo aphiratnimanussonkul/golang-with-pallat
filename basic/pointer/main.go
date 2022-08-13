@@ -1,0 +1,5 @@
+package pointer
+
+func HelloPointer() {
+
+}
