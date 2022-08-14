@@ -1,0 +1,10 @@
+{
+    "previewLimit": 50,
+    "server": "localhost",
+    "port": 5432,
+    "driver": "PostgreSQL",
+    "name": "myapp",
+    "database": "myapp",
+    "username": "postgres",
+    "password": "mysecretpassword"
+  }
