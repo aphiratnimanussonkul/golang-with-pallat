@@ -20,7 +20,7 @@ func main() {
 	defer conn.Close(context.Background())
 
 	todoHandler := &todoHandler{conn: conn}
-	http.Handle("/task", todoHandler)
+	http.Handle("/todos", todoHandler)
 
 	http.HandleFunc("/hello", helloHandler)
 	log.Fatal(http.ListenAndServe(":8080", nil))
@@ -60,10 +60,8 @@ func (h *todoHandler) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	}
 
 	encoder := json.NewEncoder(w)
-
 	if err := encoder.Encode(map[string]string{"message": " success"}); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-
 }
