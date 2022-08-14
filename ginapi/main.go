@@ -9,6 +9,8 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/aphiratnimanussonkul/golang-with-pallat/ginapi/store"
+	"github.com/aphiratnimanussonkul/golang-with-pallat/ginapi/todo"
 	"github.com/gin-gonic/gin"
 )
 
@@ -18,10 +20,15 @@ func main() {
 	defer stop()
 
 	router := gin.Default()
+
+	conn := store.ConnectDB()
+
 	router.GET("/", func(c *gin.Context) {
 		time.Sleep(10 * time.Second)
 		c.String(http.StatusOK, "Welcome Gin Server")
 	})
+
+	router.POST("/todos", todo.NewHandler(store.NewStore(conn)).NewTask)
 
 	srv := &http.Server{
 		Addr:    ":" + os.Getenv("PORT"),
