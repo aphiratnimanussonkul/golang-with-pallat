@@ -3,9 +3,14 @@ package main
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"io"
 	"log"
 	"net/http"
+	"os"
+	"os/signal"
+	"syscall"
+	"time"
 
 	"github.com/jackc/pgx/v4"
 )
@@ -22,14 +27,22 @@ func main() {
 	http.Handle("/todos", todoHandler)
 
 	http.HandleFunc("/hello", helloHandler)
-	log.Fatal(http.ListenAndServe(":8080", nil))
 
-	// if _, err := conn.Exec(context.Background(), "INSERT INTO TODOS(TITLE) VALUES($1)", "Hello db"); err != nil {
-	// 	// Handling error, if occur
-	// 	fmt.Println("Unable to insert due to: ", err)
-	// 	return
-	// }
-	// fmt.Println("Insertion Succesfull")
+	//graceful shutdown
+	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
+	defer stop()
+
+	srv := &http.Server{Addr: ":8080"}
+	go func() {
+		log.Fatal((srv.ListenAndServe()))
+	}()
+
+	<-ctx.Done()
+	stop()
+	timeooutCtx, cancel := context.WithTimeout(context.Background(), time.Second*5)
+	defer cancel()
+	log.Panic(srv.Shutdown(timeooutCtx))
+	fmt.Println("Server stopped")
 }
 
 func helloHandler(w http.ResponseWriter, req *http.Request) {
