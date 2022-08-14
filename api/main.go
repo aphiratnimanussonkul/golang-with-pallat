@@ -2,8 +2,9 @@ package main
 
 import (
 	"context"
-	"fmt"
+	"io"
 	"log"
+	"net/http"
 
 	"github.com/jackc/pgx/v4"
 )
@@ -16,10 +17,17 @@ func main() {
 
 	defer conn.Close(context.Background())
 
-	if _, err := conn.Exec(context.Background(), "INSERT INTO TODOS(TASK) VALUES($1)", "Hello db"); err != nil {
-		// Handling error, if occur
-		fmt.Println("Unable to insert due to: ", err)
-		return
+	helloHandler := func(w http.ResponseWriter, req *http.Request) {
+		io.WriteString(w, "Hello, world!\n")
 	}
-	fmt.Println("Insertion Succesfull")
+
+	http.HandleFunc("/hello", helloHandler)
+	log.Fatal(http.ListenAndServe(":8080", nil))
+
+	// if _, err := conn.Exec(context.Background(), "INSERT INTO TODOS(TITLE) VALUES($1)", "Hello db"); err != nil {
+	// 	// Handling error, if occur
+	// 	fmt.Println("Unable to insert due to: ", err)
+	// 	return
+	// }
+	// fmt.Println("Insertion Succesfull")
 }
