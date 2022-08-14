@@ -3,7 +3,6 @@ package main
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 	"io"
 	"log"
 	"net/http"
@@ -18,8 +17,8 @@ func main() {
 	}
 
 	defer conn.Close(context.Background())
-
-	todoHandler := &todoHandler{conn: conn}
+	store := NewStore(conn)
+	todoHandler := &todoHandler{store: store}
 	http.Handle("/todos", todoHandler)
 
 	http.HandleFunc("/hello", helloHandler)
@@ -37,8 +36,25 @@ func helloHandler(w http.ResponseWriter, req *http.Request) {
 	io.WriteString(w, "Hello, world!\n")
 }
 
-type todoHandler struct {
+type store struct {
 	conn *pgx.Conn
+}
+
+func NewStore(conn *pgx.Conn) *store {
+	return &store{conn: conn}
+}
+
+func (s *store) NewTask(title string) error {
+	if _, err := s.conn.Exec(context.Background(), "INSERT INTO TODOS(TITLE) VALUES($1)", title); err != nil {
+		return err
+	}
+	return nil
+}
+
+type todoHandler struct {
+	store interface {
+		NewTask(title string) error
+	}
 }
 
 type TodoNewTask struct {
@@ -53,8 +69,7 @@ func (h *todoHandler) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
-	if _, err := h.conn.Exec(context.Background(), "INSERT INTO TODOS(TITLE) VALUES($1)", t.Title); err != nil {
-		fmt.Println("Unable to insert due to: ", err)
+	if err := h.store.NewTask(t.Title); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
