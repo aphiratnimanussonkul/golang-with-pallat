@@ -13,7 +13,7 @@ type fakeStore struct{}
 func (fakeStore) NewTask(ttile string) error { return nil }
 
 func TestTodoNewTaskHandler(t *testing.T) {
-	payload := bytes.NewBuffer([]byte(`{"title":"task"`))
+	payload := bytes.NewBuffer([]byte(`{"title":"task"}`))
 	req := httptest.NewRequest("POST", "http://8080/todos", payload)
 	w := httptest.NewRecorder()
 	h := todoHandler{store: fakeStore{}}
