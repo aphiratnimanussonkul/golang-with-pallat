@@ -74,8 +74,10 @@ func (h *todoHandler) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
+	w.Header().Set("Content-Type", "application/json")
+
 	encoder := json.NewEncoder(w)
-	if err := encoder.Encode(map[string]string{"message": " success"}); err != nil {
+	if err := encoder.Encode(map[string]string{"message": "success"}); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
