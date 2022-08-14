@@ -41,7 +41,9 @@ func main() {
 	stop()
 	timeooutCtx, cancel := context.WithTimeout(context.Background(), time.Second*5)
 	defer cancel()
-	log.Panic(srv.Shutdown(timeooutCtx))
+	if err := srv.Shutdown(timeooutCtx); err != nil {
+		log.Println(err)
+	}
 	fmt.Println("Server stopped")
 }
 
